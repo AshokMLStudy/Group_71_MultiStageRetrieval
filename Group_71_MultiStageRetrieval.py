@@ -24,8 +24,9 @@ def preprocess_pdfs(pdf_paths):
     return text_chunks
 
 # Upload and Load Financial Documents from HTML
-print("Please upload financial statements in PDF format")
-pdf_paths = files.upload()
+# print("Please upload financial statements in PDF format")
+# pdf_paths = files.upload()
+pdf_paths = ['msft-20230630_10k_2023.pdf','msft-20240630_10k_2024.pdf']
 chunks = preprocess_pdfs(pdf_paths)
 
 from sentence_transformers import SentenceTransformer
