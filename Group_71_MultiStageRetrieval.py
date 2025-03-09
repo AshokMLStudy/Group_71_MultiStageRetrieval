@@ -113,7 +113,7 @@ def advanced_rag(query):
     confidence = (bm25_scores[coarse_indices[0]] / max(bm25_scores)) * 0.5 + (1 - D[0][0]) * 0.5
     return answer, confidence
 
-!pip install streamlit
+# !pip install streamlit
 
 import streamlit as st
 
