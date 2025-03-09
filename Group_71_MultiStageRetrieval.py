@@ -1,12 +1,12 @@
-# !pip install faiss-cpu rank_bm25 sentence-transformers transformers beautifulsoup4
+python -m pip install faiss-cpu rank_bm25 sentence-transformers transformers beautifulsoup4
 
-# !pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
+python -m pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
 
 from sentence_transformers import SentenceTransformer
 import faiss
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-# !pip install pdfplumber
+python -m pip install pdfplumber
 
 from google.colab import files
 import pdfplumber
@@ -113,7 +113,7 @@ def advanced_rag(query):
     confidence = (bm25_scores[coarse_indices[0]] / max(bm25_scores)) * 0.5 + (1 - D[0][0]) * 0.5
     return answer, confidence
 
-# !pip install streamlit
+python -m pip install streamlit
 
 import streamlit as st
 
