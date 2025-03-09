@@ -1,12 +1,12 @@
-!pip install faiss-cpu rank_bm25 sentence-transformers transformers beautifulsoup4
+# !pip install faiss-cpu rank_bm25 sentence-transformers transformers beautifulsoup4
 
-!pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
+# !pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
 
 from sentence_transformers import SentenceTransformer
 import faiss
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-!pip install pdfplumber
+# !pip install pdfplumber
 
 from google.colab import files
 import pdfplumber
