@@ -1,6 +1,17 @@
-python -m pip install faiss-cpu rank_bm25 sentence-transformers transformers beautifulsoup4
+import subprocess
+import sys
 
-python -m pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+    
+# python -m pip install faiss-cpu rank_bm25 sentence-transformers transformers beautifulsoup4
+install("faiss-cpu")
+install("rank_bm25")
+install("sentence-transformers")
+install("transformers")
+install("beautifulsoup4")
+
+# python -m pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
 
 from sentence_transformers import SentenceTransformer
 import faiss
