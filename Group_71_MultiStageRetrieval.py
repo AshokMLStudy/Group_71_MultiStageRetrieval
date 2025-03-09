@@ -12,12 +12,14 @@ install("transformers")
 install("beautifulsoup4")
 
 # python -m pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
+install("transformers[sentencepiece]")
 
 from sentence_transformers import SentenceTransformer
 import faiss
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-python -m pip install pdfplumber
+# python -m pip install pdfplumber
+install("pdfplumber")
 
 from google.colab import files
 import pdfplumber
@@ -124,7 +126,9 @@ def advanced_rag(query):
     confidence = (bm25_scores[coarse_indices[0]] / max(bm25_scores)) * 0.5 + (1 - D[0][0]) * 0.5
     return answer, confidence
 
-python -m pip install streamlit
+# python -m pip install streamlit
+install("streamlit")
+
 
 import streamlit as st
 
