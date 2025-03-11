@@ -9,7 +9,7 @@ install("faiss-cpu")
 install("rank_bm25")
 install("sentence-transformers")
 install("transformers")
-install("beautifulsoup4")
+# install("beautifulsoup4")
 
 # python -m pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
 install("transformers[sentencepiece]")
