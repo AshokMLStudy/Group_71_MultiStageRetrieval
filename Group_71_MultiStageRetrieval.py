@@ -21,7 +21,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 # python -m pip install pdfplumber
 install("pdfplumber")
 
-from google.colab import files
+# from google.colab import files
 import pdfplumber
 
 def preprocess_pdfs(pdf_paths):
