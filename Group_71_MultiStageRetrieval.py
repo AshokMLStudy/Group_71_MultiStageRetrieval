@@ -11,7 +11,7 @@ install("sentence-transformers")
 install("transformers")
 # install("beautifulsoup4")
 
-python -m pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
+# python -m pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
 # install("transformers[sentencepiece]")
 
 from sentence_transformers import SentenceTransformer
