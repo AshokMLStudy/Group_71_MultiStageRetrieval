@@ -60,7 +60,7 @@ except Exception as e:
     # Fallback tokenization will be used if NLTK download fails
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, force=True)
+logging.basicConfig(level=logging.ERROR, force=True)
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
@@ -114,18 +114,6 @@ if not os.path.exists("embeddings.pkl"):
     precompute_and_save()
 
 # Load precomputed data
-# def load_precomputed_data():
-#     try:
-#         with open("chunks.pkl", "rb") as f:
-#             chunks = pickle.load(f)
-#         with open("embeddings.pkl", "rb") as f:
-#             embeddings = pickle.load(f)
-#         with open("tokenized_chunks.pkl", "rb") as f:
-#             tokenized_chunks = pickle.load(f)
-#         return chunks, embeddings, tokenized_chunks
-#     except FileNotFoundError as e:
-#         logger.error(f"Precomputed files missing: {e}. Please run precompute_and_save() and upload the .pkl files.")
-#         raise
 def load_precomputed_data():
     try:
         with open("chunks.pkl", "rb") as f:
@@ -245,7 +233,6 @@ def basic_rag(query):
     # Step 4: Prepare context for generation
     context = " ".join(retrieved_chunks)
     query_year = "2024" if "2024" in query.lower() else "2023" if "2023" in query.lower() else "2022"
-    official_revenues = {"2022": 198.3e9, "2023": 211.9e9, "2024": 245.1e9}  # Add official revenues for fallback
     input_text = (
         f"Extract the exact total revenue figure for Microsoft in fiscal year {query_year} from the following context. "
         f"Return only the figure in the format '$XXX.X billion' if it matches the official total revenue for fiscal year {query_year} "
@@ -289,12 +276,6 @@ def basic_rag(query):
             answer = "No valid data"
     else:
         logger.warning(f"No revenue figure found in generated answer: {answer}")
-        # Fallback to official revenue if no valid data is found
-        # if query_year in official_revenues:
-        #     answer = f"Microsoft's total revenue in {query_year} was ${official_revenues[query_year] / 1e9:.1f} billion"
-        #     logger.info(f"Fallback to official revenue: {answer}")
-        # else:
-        #     answer = "No valid data"
         answer = "No valid data"
 
     # Step 8: Calculate confidence score with improved error handling and debugging
@@ -687,6 +668,55 @@ except Exception as e:
 
 # """### . Guard Rail Implementation"""
 
+def input_guardrail(query):
+#    """
+#    Validate and filter user queries to prevent irrelevant or harmful inputs.
+#
+#    Args:
+#        query (str): User input query
+#
+#    Returns:
+#        tuple: (is_valid, message)
+#            - is_valid (bool): True if the query is valid, False otherwise
+#            - message (str): Response message (empty if valid, error message if invalid)
+#    """
+    # Define financial relevance keywords
+    financial_keywords = [
+        "revenue", "profit", "loss", "income", "expense", "balance", "financial", "statement",
+        "performance", "earnings", "total", "consolidated", "fiscal", "year", "2022", "2023", "2024"
+    ]
+
+    # Define blacklist for harmful or inappropriate terms
+    harmful_terms = [
+        "die", "kill", "death penalty", "hate", "attack", "violence", "illegal", "harm",
+        "offensive", "racist", "sex", "porn"
+    ]
+
+    # Convert query to lowercase for case-insensitive matching
+    query_lower = query.lower().strip()
+
+    # Check for harmful or inappropriate content
+    if any(term in query_lower for term in harmful_terms):
+        logger.warning(f"Query '{query}' rejected due to harmful content.")
+        return False, "Sorry, I cannot process queries containing harmful or inappropriate language."
+
+    # Check for relevance to financial data
+    print(f"Financial check: {query_lower}")
+    if not any(keyword in query_lower for keyword in financial_keywords):
+        # Allow queries with company names as a loose relevance check
+        company_names = ["microsoft", "ibm", "apple", "google"]
+        if not any(company in query_lower for company in company_names):
+            logger.warning(f"Query '{query}' rejected due to lack of financial relevance.")
+            return False, "Sorry, this chatbot is designed to answer financial questions. Please ask about revenue, profit, or company performance."
+
+    # Additional check for query length and structure
+    if len(query) < 5 or not any(c.isalnum() for c in query):
+        logger.warning(f"Query '{query}' rejected due to invalid length or structure.")
+        return False, "Please provide a valid question with at least 5 characters."
+
+    return True, ""
+
+
 # Guardrail
 def guardrail_filter(answer, query):
     has_correct_format = bool(re.search(r'\$\d{1,3}\.\d\s*billion', answer, re.IGNORECASE))
@@ -705,6 +735,12 @@ def guardrail_filter(answer, query):
 # Streamlit UI
 # Modify the main query processing function to include a basic RAG option
 def process_query(query, use_basic_rag=False):
+    # Input-side guardrail
+    is_valid, guardrail_message = input_guardrail(query)
+    if not is_valid:
+        logger.info(f"Query '{query}' filtered by input guardrail: {guardrail_message}")
+        return guardrail_message, 0.0
+
     if use_basic_rag:
         # Basic RAG retrieval logic
         logger.info("Using Basic RAG retrieval")
@@ -735,24 +771,45 @@ if __name__ == "__main__":
         st.write(f"Confidence Score: {confidence:.2f}")
 
 # """### Testing & Validation"""
-
-# # Example Query for Colab Testing
-# #queryDebug = "How did Microsoft performed compared to IBM?"
-# queryDebug = "Microsoft's total revenue in 2024?"
-# try:
-#     answer, confidence = advanced_rag(queryDebug)
-#     filtered_answer = guardrail_filter(answer, queryDebug)
-#     print(f"Answer: {filtered_answer}")
-#     print(f"Confidence Score: {confidence:.2f}")
-# except Exception as e:
-#     print(f"An error occurred: {str(e)}")
-
-# # Example Query for Colab Testing
-# queryDebug = "Microsoft's total revenue in 2023?"
-# try:
-#     answer, confidence = basic_rag(queryDebug)
-#     filtered_answer = guardrail_filter(answer, queryDebug)
-#     print(f"Answer: {filtered_answer}")
-#     print(f"Confidence Score: {confidence:.2f}")
-# except Exception as e:
-#     print(f"An error occurred: {str(e)}")
+# 
+# # Basic RAG - Testing
+# test_questions = [
+#     "What was Microsoft’s revenue in 2023?",
+#     "What is Microsoft's profit last year?",
+#     "What is the capital of France?"
+# ]
+# 
+# for queryDebug in test_questions:
+#     try:
+#         # Input-side guardrail
+#         is_valid, guardrail_message = input_guardrail(queryDebug)
+#         if not is_valid:
+#             print(f"Query '{queryDebug}' filtered by input guardrail: {guardrail_message}")
+#         else:
+#             answer, confidence = basic_rag(queryDebug)
+#             filtered_answer = guardrail_filter(answer, queryDebug)
+#             print(f"Answer: {filtered_answer}")
+#             print(f"Confidence Score: {confidence:.2f}")
+#     except Exception as e:
+#         print(f"An error occurred: {str(e)}")
+# 
+# # Advanced RAG - Testing
+# test_questions = [
+#     "What was Microsoft’s revenue in 2023?",
+#     "What is Microsoft's profit last year?",
+#     "What is the capital of France?"
+# ]
+# 
+# for queryDebug in test_questions:
+#     try:
+#         # Input-side guardrail
+#         is_valid, guardrail_message = input_guardrail(queryDebug)
+#         if not is_valid:
+#             print(f"Query '{queryDebug}' filtered by input guardrail: {guardrail_message}")
+#         else:
+#             answer, confidence = advanced_rag(queryDebug)
+#             filtered_answer = guardrail_filter(answer, queryDebug)
+#             print(f"Answer: {filtered_answer}")
+#             print(f"Confidence Score: {confidence:.2f}")
+#     except Exception as e:
+#         print(f"An error occurred: {str(e)}")
