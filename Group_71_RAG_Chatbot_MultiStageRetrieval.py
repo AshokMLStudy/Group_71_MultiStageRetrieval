@@ -259,7 +259,6 @@ def basic_rag(query):
 
     # Step 7: Extract revenue figure if present
     revenue_match = re.search(r'\$\s*(\d{1,3}(,\d{3})*(\.\d+)?)\s*(billion|million)?', answer, re.IGNORECASE)
-    extracted_revenue = None  # To store the extracted revenue for confidence calculation
     if revenue_match:
         num_str = revenue_match.group(1).replace(',', '')
         unit = revenue_match.group(4).lower() if revenue_match.group(4) else 'billion'
@@ -267,7 +266,6 @@ def basic_rag(query):
             value = float(num_str)
             if unit == 'million':
                 value /= 1000  # Convert to billion
-            extracted_revenue = value * 1e9  # Store in dollars for comparison with official revenue
             if 200 <= value <= 300:
                 answer = f"Microsoft's total revenue in {query_year} was ${value:.1f} billion"
             else:
@@ -282,72 +280,26 @@ def basic_rag(query):
 
     # Step 8: Calculate confidence score with improved error handling and debugging
     confidence = 0.0
-    # Component 1: Retrieval confidence based on FAISS distances
-    retrieval_confidence = 0.0
     if distances_basic and len(distances_basic) > 0:
         try:
             distances_array = np.ravel(distances_basic)  # Ensure 1D array
             logger.info(f"distances_array: {distances_array}, shape: {distances_array.shape}")
             if distances_array.size > 0:
-                # Normalize distances to a 0-1 scale (lower distance = higher confidence)
-                # FAISS L2 distances are non-negative; smaller distances indicate higher similarity
                 max_distance = np.max(distances_array)
-                min_distance = np.min(distances_array)
-                if max_distance > min_distance:  # Avoid division by zero
-                    normalized_distances = (distances_array - min_distance) / (max_distance - min_distance)
-                    retrieval_confidence = 1.0 - np.mean(normalized_distances)  # Higher similarity = higher confidence
-                else:
-                    retrieval_confidence = 1.0 if min_distance < 1.0 else 0.0  # If all distances are equal, check if they're small
+                confidence = 1.0 - np.mean(distances_array) / max_distance if max_distance > 0 else 0.0
+            else:
+                logger.warning("distances_array is empty after conversion.")
+                confidence = 0.0
         except Exception as e:
-            logger.error(f"Error calculating retrieval confidence: {e}")
-            retrieval_confidence = 0.0
+            logger.error(f"Error calculating confidence score: {e}")
+            confidence = 0.0
     else:
         logger.warning("distances_basic is empty.")
-        retrieval_confidence = 0.0
+        confidence = 0.0
 
-    # Component 2: Answer correctness (does it contain a valid revenue figure?)
-    answer_correctness = 0.0
-    if answer != "No valid data":
-        # Check if the answer contains a revenue figure in the expected range
-        if extracted_revenue is not None and 200e9 <= extracted_revenue <= 300e9:
-            answer_correctness = 0.4  # Base score for having a valid revenue figure
-        else:
-            answer_correctness = 0.0  # No valid revenue figure
-
-    # Component 3: Alignment with official revenue
-    official_alignment = 0.0
-    if extracted_revenue is not None and query_year in official_revenues:
-        official_value = official_revenues[query_year]
-        # Calculate relative difference
-        difference = abs(extracted_revenue - official_value) / official_value if official_value > 0 else 1.0
-        if difference < 0.01:  # Within 1% of official value
-            official_alignment = 0.4
-        elif difference < 0.05:  # Within 5% of official value
-            official_alignment = 0.2
-        elif difference < 0.1:  # Within 10% of official value
-            official_alignment = 0.1
-
-    # Component 4: Year relevance (does the answer match the queried year?)
-    year_relevance = 0.0
-    if answer != "No valid data":
-        answer_year = re.search(r'202[2-4]', answer)
-        if answer_year and answer_year.group(0) == query_year:
-            year_relevance = 0.2
-
-    # Combine components (weights sum to 1.0)
-    confidence = (
-        retrieval_confidence * 0.3 +  # 30% weight for retrieval quality
-        answer_correctness * 0.3 +    # 30% weight for having a valid revenue figure
-        official_alignment * 0.3 +    # 30% weight for alignment with official data
-        year_relevance * 0.1          # 10% weight for year relevance
-    )
-    confidence = max(min(confidence, 1.0), 0.0)  # Ensure confidence is between 0 and 1
-
+    # Adjust confidence if using official revenue as fallback
     logger.info(f"Generated answer Basic RAG: {answer}, Confidence: {confidence:.2f}")
-    logger.info(f"Confidence breakdown: retrieval={retrieval_confidence:.2f}, correctness={answer_correctness:.2f}, "
-                f"official_alignment={official_alignment:.2f}, year_relevance={year_relevance:.2f}")
     return answer, confidence
-
 
 # """### Advanced RAG Implementation
 # - Employs multi-stage retrieval with FAISS and BM25 for hybrid ranking.
