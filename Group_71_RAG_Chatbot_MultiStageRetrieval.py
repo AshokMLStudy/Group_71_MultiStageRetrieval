@@ -23,14 +23,14 @@ Multi-Stage Retrieval
 ### Install the required libraries
 """
 
-!pip install faiss-cpu rank_bm25 sentence-transformers transformers beautifulsoup4
-!pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
-!pip install pdfplumber
-!pip install streamlit
-!pip install torch
-!pip install nltk  # Added for sentence-level chunking
-!pip install --upgrade torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-!pip install pypdf2
+# !pip install faiss-cpu rank_bm25 sentence-transformers transformers beautifulsoup4
+# !pip install transformers[sentencepiece]  # Ensure sentencepiece is installed for tokenization
+# !pip install pdfplumber
+# !pip install streamlit
+# !pip install torch
+# !pip install nltk  # Added for sentence-level chunking
+# !pip install --upgrade torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# !pip install pypdf2
 
 import streamlit as st
 import numpy as np
@@ -736,23 +736,23 @@ if __name__ == "__main__":
 
 """### Testing & Validation"""
 
-# Example Query for Colab Testing
-#queryDebug = "How did Microsoft performed compared to IBM?"
-queryDebug = "Microsoft's total revenue in 2024?"
-try:
-    answer, confidence = advanced_rag(queryDebug)
-    filtered_answer = guardrail_filter(answer, queryDebug)
-    print(f"Answer: {filtered_answer}")
-    print(f"Confidence Score: {confidence:.2f}")
-except Exception as e:
-    print(f"An error occurred: {str(e)}")
+# # Example Query for Colab Testing
+# #queryDebug = "How did Microsoft performed compared to IBM?"
+# queryDebug = "Microsoft's total revenue in 2024?"
+# try:
+#     answer, confidence = advanced_rag(queryDebug)
+#     filtered_answer = guardrail_filter(answer, queryDebug)
+#     print(f"Answer: {filtered_answer}")
+#     print(f"Confidence Score: {confidence:.2f}")
+# except Exception as e:
+#     print(f"An error occurred: {str(e)}")
 
-# Example Query for Colab Testing
-queryDebug = "Microsoft's total revenue in 2023?"
-try:
-    answer, confidence = basic_rag(queryDebug)
-    filtered_answer = guardrail_filter(answer, queryDebug)
-    print(f"Answer: {filtered_answer}")
-    print(f"Confidence Score: {confidence:.2f}")
-except Exception as e:
-    print(f"An error occurred: {str(e)}")
+# # Example Query for Colab Testing
+# queryDebug = "Microsoft's total revenue in 2023?"
+# try:
+#     answer, confidence = basic_rag(queryDebug)
+#     filtered_answer = guardrail_filter(answer, queryDebug)
+#     print(f"Answer: {filtered_answer}")
+#     print(f"Confidence Score: {confidence:.2f}")
+# except Exception as e:
+#     print(f"An error occurred: {str(e)}")
