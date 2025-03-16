@@ -67,7 +67,7 @@ handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
 logger.addHandler(handler)
 logger.info("Logging is enabled and working in Colab.")
 
-"""### Data Collection and Preprocessing"""
+# """### Data Collection and Preprocessing"""
 
 # Preprocessing (run locally once, then upload preprocessed data)
 def preprocess_pdfs(pdf_paths):
@@ -146,12 +146,12 @@ def load_precomputed_data():
         logger.error(f"Error loading precomputed data: {e}")
         raise
 
-"""### Basic RAG Implementation
-- Uses a single vector-based retrieval step with FAISS.
-- Retrieves the top_k most similar chunks based on cosine similarity (via L2 distance).
-- Passes retrieved chunks directly to the language model for generation.
-- Simpler than multi-stage RAG, which combines dense (FAISS) and sparse (BM25) retrieval.
-"""
+# """### Basic RAG Implementation
+# - Uses a single vector-based retrieval step with FAISS.
+# - Retrieves the top_k most similar chunks based on cosine similarity (via L2 distance).
+# - Passes retrieved chunks directly to the language model for generation.
+# - Simpler than multi-stage RAG, which combines dense (FAISS) and sparse (BM25) retrieval.
+# """
 
 # Initialize Basic RAG models and index
 def load_basic_models_and_index():
@@ -320,10 +320,10 @@ def basic_rag(query):
     logger.info(f"Generated answer Basic RAG: {answer}, Confidence: {confidence:.2f}")
     return answer, confidence
 
-"""### Advanced RAG Implementation
-- Employs multi-stage retrieval with FAISS and BM25 for hybrid ranking.
-- Includes re-ranking and validation steps for better precision.
-"""
+# """### Advanced RAG Implementation
+# - Employs multi-stage retrieval with FAISS and BM25 for hybrid ranking.
+# - Includes re-ranking and validation steps for better precision.
+# """
 
 # Initialize models and index
 def load_models_and_index():
@@ -685,7 +685,7 @@ except Exception as e:
     logger.error(f"Error loading models and index: {e}")
     raise
 
-"""### . Guard Rail Implementation"""
+# """### . Guard Rail Implementation"""
 
 # Guardrail
 def guardrail_filter(answer, query):
@@ -700,7 +700,7 @@ def guardrail_filter(answer, query):
             return "Sorry, I couldn’t find relevant financial data for this query."
     return answer
 
-"""### UI Development (e.g., Streamlit)"""
+# """### UI Development (e.g., Streamlit)"""
 
 # Streamlit UI
 # Modify the main query processing function to include a basic RAG option
@@ -734,7 +734,7 @@ if __name__ == "__main__":
         st.write(f"Answer: {answer}")
         st.write(f"Confidence Score: {confidence:.2f}")
 
-"""### Testing & Validation"""
+# """### Testing & Validation"""
 
 # # Example Query for Colab Testing
 # #queryDebug = "How did Microsoft performed compared to IBM?"
